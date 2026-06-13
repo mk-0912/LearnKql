@@ -1,0 +1,25 @@
+// Basic KQL examples using datatable so you can run these without existing tables
+
+// 1) Small inline dataset
+datatable(id:int, name:string, ts:datetime, value:real)
+[
+  1, "a", datetime(2023-01-01 00:00:00), 10.5,
+  2, "b", datetime(2023-01-01 01:00:00), 12.3,
+  3, "a", datetime(2023-01-01 02:00:00), 9.7,
+  4, "c", datetime(2023-01-01 03:00:00), 15.2
+]
+| take 3
+
+// 2) Filtering and projection
+datatable(id:int, name:string, ts:datetime, value:real)[1, "a", datetime(2023-01-01), 10.5, 2, "b", datetime(2023-01-02), 12.3]
+| where value > 11
+| project id, name, value
+
+// 3) Simple aggregation
+datatable(id:int, name:string, ts:datetime, value:real)[1, "a", datetime(2023-01-01), 10.5, 2, "b", datetime(2023-01-02), 12.3, 3, "a", datetime(2023-01-03), 8.9]
+| summarize count() by name
+
+// 4) Top N per group (using arg_max)
+datatable(id:int, name:string, ts:datetime, value:real)
+[1, "a", datetime(2023-01-01), 10.5, 2, "a", datetime(2023-01-02), 13.1, 3, "b", datetime(2023-01-02), 9.2]
+| summarize arg_max(value, *) by name

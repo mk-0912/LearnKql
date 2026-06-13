@@ -1,0 +1,28 @@
+// Complex KQL examples: join and time-series analysis
+
+// Left table: events
+datatable(id:int, user:string, ts:datetime, value:real)
+[
+  1, "alice", datetime(2023-01-01 00:00:00), 10,
+  2, "bob", datetime(2023-01-01 00:05:00), 7,
+  3, "alice", datetime(2023-01-01 00:10:00), 12
+]
+
+// Right table: user metadata
+datatable(user:string, region:string)
+[
+  "alice", "west",
+  "bob", "east"
+]
+
+// 1) Join events with metadata
+| join kind=inner (
+    datatable(user:string, region:string)["alice","west","bob","east"]
+) on user
+| project id, user, region, ts, value
+
+// 2) Time-series: make-series per user
+// (use real data in production; datatable above is minimal)
+| make-series avgValue=avg(value) default=0 on ts from datetime(2023-01-01) to datetime(2023-01-02) step 1h by user
+
+// Use charting in the ADX web UI to visualize the series.

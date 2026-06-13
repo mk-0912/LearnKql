@@ -1,0 +1,23 @@
+// Medium KQL examples: binning, summarize over time, moving averages
+
+// Example dataset
+datatable(ts:datetime, metric:real)
+[
+  datetime(2023-01-01 00:00:00), 10,
+  datetime(2023-01-01 00:05:00), 12,
+  datetime(2023-01-01 00:10:00), 11,
+  datetime(2023-01-01 00:20:00), 14,
+  datetime(2023-01-01 00:30:00), 13
+]
+
+// 1) Binning into 15-minute buckets and averaging
+| summarize avg(metric) by bin(ts, 15m)
+
+// 2) Make-series (good for charting time-series)
+| make-series avgMetric=avg(metric) on ts from datetime(2023-01-01) to datetime(2023-01-02) step 1h
+
+// 3) Simple moving average (using moving_avg plugin)
+| summarize avgValue=avg(metric) by bin(ts, 5m)
+| extend movingAvg=series_fir(avgValue, dynamic([0.25,0.5,0.25]))
+
+// Note: replace inline datatable with your real table for production data.
